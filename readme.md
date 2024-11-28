@@ -15,3 +15,5 @@ added jwt package(jsonWebToken), and added access and refresh tokens(secret, exp
 next step is to utilize multer(file upload utility)
 workflow will be: file from user -> multer -> local server tempororily -> cloudinary server    
 
+NOTE: Routes, 
+in app.js we are using app.use() to declare our routes because since we have our code segregated in different folders, we now need to use middlewares to declare them instead of how we would have normally done( i.e. by using app.get() -> in this case the routes are declare/defined in the same app.js file(or we are not importing it from anywhere else.))
