@@ -163,7 +163,7 @@ const logOutUser = asyncHandler(async(req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
-
+    console.log("Incoming Refresh Token:", incomingRefreshToken);
     if(!incomingRefreshToken) {
         throw new ApiError(401, "Unauthorised Access!")
     }
@@ -203,7 +203,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const changeCurrentPassword = asyncHandler(async(req, res) =>{
     const {oldPassword, newPassword} = req.body
-    const user = await User.findById(req?.user._id)
+    const user = await User.findById(req.user?._id)
     const isOldPasswordCorrect = await user.isPasswordCorrect(oldPassword)
     if(!isOldPasswordCorrect) {
         throw new ApiError(400, "Please give correct current password!")
@@ -233,7 +233,7 @@ const updateAccountDetails = asyncHandler(async(req, res) => {
         throw new ApiError(400, "All fields are required to change account details!")
     }
     const user = User.findByIdAndUpdate(
-        req?.user._id, 
+        req.user?._id, 
     {
         $set: {
             fullname, 
@@ -242,7 +242,7 @@ const updateAccountDetails = asyncHandler(async(req, res) => {
 
     },
     {new : true}).select("-password")
-
+    //await user.save({validateBeforeSave: false})
     return res
     .status(200)
     .json( new ApiResponse(200, "Account details updated successfully!"))
@@ -296,7 +296,7 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
 
 const getUserChannelProfile = asyncHandler(async(req, res) => {
     const {username} = req.params
-    if(!username){
+    if(!username?.trim()){
         throw new ApiError(400, "username is missing!")
     }
     const channel = await User.aggregate([
@@ -367,7 +367,7 @@ const getWatchHistory = asyncHandler(async(req, res)=> {
     const user = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId.createFromHexString(req.user._id)
+                _id: new mongoose.Types.ObjectId(req.user._id)
             }
         }, 
         {
