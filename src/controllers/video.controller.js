@@ -285,8 +285,8 @@ const updateVideo = asyncHandler(async (req, res) => {
     if(!video){
         throw new ApiError(400, "Video does not exist.")
     }
-    if(video?.owner.toString() !=== req.user?._id.toString()){
-        throw new ApiError(400, "Owner conflict, you can't edit this Video.")
+    if(video?.owner.toString() !== req.user?._id.toString()){
+        throw new ApiError(400, "Owner conflict, you can't edit this Video.");
     }
 
     //thumbnail - delete old and update new
