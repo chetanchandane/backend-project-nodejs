@@ -75,10 +75,47 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 });
 
 const updatePlaylist = asyncHandler(async (req, res) => {
+    //TODO: update playlist
     const {playlistId} = req.params
     const {name, description} = req.body
-    //TODO: update playlist
-})
+
+    if (!isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid Playlist Id!");
+    }
+    if(!name || !description){
+        throw new ApiError(400, "Name and Description are required fields!");
+    }
+
+    const playlist = await Playlist.findById(playlistId);
+
+    if(!playlist){
+        throw new ApiError(404, "Playlist does not exist.");
+    }
+
+    if(playlist.owner.toString() !== req.user?._id.toString()){
+        throw new ApiError(500, "Playlist can not be updated, ownership conflict!");
+    }
+
+    const updatedPlaylist = await Playlist.findByIdAndUpdate( playlist?._id, 
+        {
+            $set: {
+                name, 
+                description, 
+            }
+        }, 
+        {new: true}
+    );
+
+    if(!updatedPlaylist){
+        throw new ApiError(500, "Failed!, could not update playlist, please try again.");
+    }
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, updatedPlaylist, "Playlist Updated Successfully!")
+    );
+    
+});
 
 export {
     createPlaylist,
