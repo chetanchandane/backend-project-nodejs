@@ -1,9 +1,10 @@
-import mongoose, {isValidObjectId} from "mongoose"
-import {Comment} from "../models/comment.models.js"
-import {Video} from "../models/video.models.js"
-import {ApiError} from "../utils/ApiError.js"
-import {ApiResponse} from "../utils/ApiResponse.js"
-import {asyncHandler} from "../utils/asyncHandler.js"
+import mongoose, {isValidObjectId} from "mongoose";
+import {Comment} from "../models/comment.models.js";
+import {Like} from "../models/like.models.js";
+import {Video} from "../models/video.models.js";
+import {ApiError} from "../utils/ApiError.js";
+import {ApiResponse} from "../utils/ApiResponse.js";
+import {asyncHandler} from "../utils/asyncHandler.js";
 
 const getVideoComments = asyncHandler(async (req, res) => {
     //TODO: get all comments for a video
@@ -183,7 +184,4 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 export {
     getVideoComments, 
-    addComment, 
-    updateComment,
-     deleteComment
-    }
+    add
