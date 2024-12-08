@@ -50,9 +50,29 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 })
 
 const deletePlaylist = asyncHandler(async (req, res) => {
-    const {playlistId} = req.params
     // TODO: delete playlist
-})
+    const {playlistId} = req.params
+    if(!isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid Playlist ID");
+    }
+    
+    const playlist = await Playlist.findById(playlistId);
+    if(!playlist) {
+        throw new ApiError(404, "Playlist does not exist.");
+    }
+
+    if(playlist.owner.toString() !== req.user?._id.toString()){
+        throw new ApiError(500, "Playlist cannot be deleted, Ownership Conflict!");
+    }
+
+    await Playlist.findByIdAndDelete(playlistId);
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, {}, "Playlist was deleted Successfully!")
+    );
+});
 
 const updatePlaylist = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
