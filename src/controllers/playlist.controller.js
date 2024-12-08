@@ -3,6 +3,7 @@ import {Playlist} from "../models/playlist.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import { application } from "express"
 
 
 const createPlaylist = asyncHandler(async (req, res) => {
@@ -37,10 +38,94 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
     //TODO: get playlist by id
-})
+    if(!isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid Playlist Id");
+    }
+    const playlist = await Playlist.findById(playlistId);
+    if(!playlist){
+        throw new ApiError(404, "Playlist does not exist!");
+    }
+
+    const playlistVideos = await Playlist.aggregate([
+        {
+            $match: {
+                _id : new mongoose.Types.ObjectId(playlistId)
+            }
+        }, 
+        {
+            $lookup : {
+                from : "videos", 
+                localField: "videos", 
+                foreingField: "_id", 
+                as: "videos"
+            }
+        }, 
+        {
+            $match: {
+                "videos.isPublished": true
+            }
+        }, 
+        {
+            $lookup: {
+                from : "users", 
+                localField: "owner",
+                foreingField: "_id", 
+                as: "owner"
+            }
+        },
+        {
+            $addField: {
+                totalVideos: {
+                    $size : "$videos"
+                }, 
+                totalViews: {
+                    $sum: "$videos.views"
+                },
+                owner: {
+                    $first: "$owner"
+                }
+            }
+        }, 
+        {
+            $project: {
+                username: 1, 
+                description: 1, 
+                createdAt: 1, 
+                updatedAt: 1, 
+                totalVideos: 1, 
+                totalViews: 1, 
+                videos: {
+                    _id: 1, 
+                    "videoFile.url": 1, 
+                    "thumbnail.url": 1, 
+                    title: 1,
+                    description: 1, 
+                    duration: 1,
+                    createdAt: 1, 
+                    views: 1
+                }, 
+                owner: {
+                    username: 1, 
+                    fullname: 1, 
+                    "avatar.url": 1,
+                }
+            }
+        }
+    ]);
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, playlist, "Playlist fetched successfully!!")
+    );
+});
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
     const {playlistId, videoId} = req.params
+    if(!isValidObjectId(playlistId) || !isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid PlaylistID or VideoID, try again.");
+    }
+
 })
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
