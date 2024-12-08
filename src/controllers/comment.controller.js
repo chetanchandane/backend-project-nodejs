@@ -184,4 +184,7 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 export {
     getVideoComments, 
-    add
+    addComment, 
+    updateComment,
+     deleteComment
+    }
