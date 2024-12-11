@@ -19,7 +19,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         await Like.findByIdAndDelete(likedAlready?._id);
         return res
         .status(200)
-        .json(new ApiResponse(200, "Unliked the Video! Successfully"));
+        .json(new ApiResponse(200, {isLiked: false}"Unliked the Video! Successfully"));
     }
 
     await Like.crete({
@@ -28,14 +28,41 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     });
     return res
     .status(200)
-    .json(new ApiResponse(200, {isLiked: true} ,"Liked Video Successfully!"))
-})
+    .json(new ApiResponse(200, {isLiked: true} ,"Liked Video Successfully!"));
+});
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const {commentId} = req.params
     //TODO: toggle like on comment
 
-})
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400, "Invalid Comment ID!");
+    }
+
+    const commentAlreadyLiked = await Comment.findOne({
+        comment: commentId, 
+        likedBy: req.user?._id
+    });
+
+    if(commentAlreadyLiked){
+        // unlike the comment
+        await Comment.findByIdAndDelete(commentAlreadyLiked?._id);
+
+        return res
+        .status(200)
+        .json(new ApiResponse(200, {isLiked: false}, "Comment Unliked!" ))
+    }
+
+    await Comment.create({
+        comment: commentId, 
+        likedBy: req.user?._id
+    });
+
+    return res
+    .status(200)
+    .json( new ApiResponse(200, {isLiked: true}, "Comment liked Successfully!"));
+
+});
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const {tweetId} = req.params
